@@ -1,0 +1,49 @@
+name: Deploy PWA to GitHub Pages
+
+# Deploys the static PWA whenever main changes. This replaces the
+# Settings → Pages "Deploy from a branch" toggle: `enablement: true` turns
+# Pages on (build type "workflow") on the first run, so it's all config-as-code.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; let an in-flight deploy finish rather than cancel it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Assemble static site
+        run: |
+          mkdir -p _site
+          cp index.html app.js manifest.webmanifest sw.js icon.svg _site/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
