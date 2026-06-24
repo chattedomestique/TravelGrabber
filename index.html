@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2b2622">
+<title>TravelGrabber</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+  :root{
+    --bg:#f4f1ea; --card:#fffdf8; --ink:#2b2622; --sub:#8a8178;
+    --accent:#d8602e; --accent-ink:#fff; --line:#e7e1d6; --ok:#3f7d52; --err:#c0492f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#1c1916; --card:#262220; --ink:#f0ebe2; --sub:#9a9087;
+           --line:#352f2b; --accent:#e8743d; }
+  }
+  *{box-sizing:border-box} html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);
+    font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; padding:max(16px,env(safe-area-inset-top)) 16px 16px;}
+  .wrap{max-width:520px;margin:0 auto}
+  header{display:flex;align-items:baseline;justify-content:space-between;margin:8px 2px 18px}
+  h1{font-family:"New York","Iowan Old Style",Georgia,serif;font-weight:600;font-size:26px;
+    letter-spacing:-.02em;margin:0}
+  h1 small{color:var(--sub);font-weight:400}
+  .gear{background:none;border:0;color:var(--sub);font-size:20px;cursor:pointer;padding:6px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:18px;box-shadow:0 1px 2px rgba(60,40,20,.04),0 8px 24px rgba(60,40,20,.05)}
+  label{display:block;font-size:12px;letter-spacing:.02em;color:var(--sub);
+    text-transform:uppercase;margin:0 2px 7px}
+  textarea,input{width:100%;background:var(--bg);border:1px solid var(--line);
+    border-radius:10px;color:var(--ink);padding:12px 13px;font-size:16px;font-family:inherit}
+  textarea{min-height:84px;resize:vertical}
+  button.go{margin-top:14px;width:100%;background:var(--accent);color:var(--accent-ink);
+    border:0;border-radius:11px;padding:15px;font-size:16px;font-weight:600;cursor:pointer;
+    transition:transform .15s,filter .15s}
+  button.go:active{transform:scale(.985)} button.go:disabled{opacity:.5}
+  #status{margin:14px 2px 0;min-height:22px;font-size:14.5px}
+  #status.ok{color:var(--ok)} #status.err{color:var(--err)} #status.busy{color:var(--sub)}
+  #settings{margin-top:14px;display:none}
+  #settings.show{display:block}
+  #settings .row{margin-bottom:12px}
+  .hint{color:var(--sub);font-size:12.5px;margin:2px 2px 0}
+  footer{color:var(--sub);font-size:12px;text-align:center;margin:22px 0 6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>TravelGrabber</h1>
+    <button class="gear" id="gear" title="Settings" aria-label="Settings">⚙</button>
+  </header>
+
+  <div class="card">
+    <label for="url">Link to grab</label>
+    <textarea id="url" inputmode="url" autocapitalize="off" autocorrect="off"
+      placeholder="Paste a YouTube / SoundCloud / Vimeo… link"></textarea>
+    <button class="go" id="go">Send to Downie ↧</button>
+    <div id="status"></div>
+
+    <div id="settings">
+      <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
+      <div class="row">
+        <label for="api">Webhook URL</label>
+        <input id="api" inputmode="url" placeholder="https://downie.sunhouse.media">
+      </div>
+      <div class="row">
+        <label for="token">Token</label>
+        <input id="token" type="password" placeholder="paste the token from the Mac">
+        <div class="hint">Stored only on this device (localStorage). Never in the GitHub repo.</div>
+      </div>
+      <button class="go" id="save" style="background:var(--ink)">Save settings</button>
+    </div>
+  </div>
+
+  <footer>Runs Downie 4 on sunhouse-mini · paste &amp; forget</footer>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

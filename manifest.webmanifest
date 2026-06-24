@@ -1,0 +1,18 @@
+{
+  "name": "TravelGrabber",
+  "short_name": "TravelGrabber",
+  "description": "Paste a link, Downie grabs it on sunhouse-mini.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f1ea",
+  "theme_color": "#2b2622",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "share_target": {
+    "action": "./",
+    "method": "GET",
+    "params": { "url": "url", "text": "text", "title": "title" }
+  }
+}
