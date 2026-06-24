@@ -1,8 +1,11 @@
 name: Deploy PWA to GitHub Pages
 
-# Deploys the static PWA whenever main changes. This replaces the
-# Settings → Pages "Deploy from a branch" toggle: `enablement: true` turns
-# Pages on (build type "workflow") on the first run, so it's all config-as-code.
+# Deploys the static PWA to GitHub Pages on every push to main, so deploys are
+# config-as-code rather than a per-deploy dashboard action.
+#
+# One-time setup (required once): Settings → Pages → Source → "GitHub Actions".
+# The default Actions GITHUB_TOKEN can't enable Pages itself, so this single
+# toggle has to be flipped by hand; after that every push auto-deploys.
 
 on:
   push:
@@ -31,8 +34,6 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Assemble static site
         run: |
