@@ -6,25 +6,30 @@
 <meta name="theme-color" content="#2b2622">
 <title>TravelGrabber</title>
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
 <style>
   :root{
     --bg:#f4f1ea; --card:#fffdf8; --ink:#2b2622; --sub:#8a8178;
     --accent:#d8602e; --accent-ink:#fff; --line:#e7e1d6; --ok:#3f7d52; --err:#c0492f;
+    --chip:#efeae0; --yt:#c4302b; --sc:#e8703a; --bc:#2f7d84;
+    --q-lossless:#7a5bd0; --q-high:#3f7d52; --q-good:#3a6ea8; --q-ok:#a8792a; --q-low:#c0492f;
   }
   @media (prefers-color-scheme: dark){
     :root{ --bg:#1c1916; --card:#262220; --ink:#f0ebe2; --sub:#9a9087;
-           --line:#352f2b; --accent:#e8743d; }
+           --line:#352f2b; --accent:#e8743d; --chip:#332d29;
+           --q-lossless:#a78bfa; --q-high:#6cc48a; --q-good:#7fb0e0; --q-ok:#d6a94e; --q-low:#e8735c; }
   }
   *{box-sizing:border-box} html,body{margin:0;height:100%}
+  /* Author display rules (e.g. .selbar{display:flex}) beat the UA [hidden] rule — pin it. */
+  [hidden]{display:none!important}
   body{background:var(--bg);color:var(--ink);
     font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;
-    -webkit-font-smoothing:antialiased; padding:max(16px,env(safe-area-inset-top)) 16px 16px;}
-  .wrap{max-width:520px;margin:0 auto}
-  header{display:flex;align-items:baseline;justify-content:space-between;margin:8px 2px 18px}
+    -webkit-font-smoothing:antialiased; padding:max(16px,env(safe-area-inset-top)) 16px 96px;}
+  .wrap{max-width:640px;margin:0 auto}
+  header{display:flex;align-items:baseline;justify-content:space-between;margin:8px 2px 14px}
   h1{font-family:"New York","Iowan Old Style",Georgia,serif;font-weight:600;font-size:26px;
     letter-spacing:-.02em;margin:0}
-  h1 small{color:var(--sub);font-weight:400}
   .gear{background:none;border:0;color:var(--sub);font-size:20px;cursor:pointer;padding:6px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;
     padding:18px;box-shadow:0 1px 2px rgba(60,40,20,.04),0 8px 24px rgba(60,40,20,.05)}
@@ -36,14 +41,77 @@
   button.go{margin-top:14px;width:100%;background:var(--accent);color:var(--accent-ink);
     border:0;border-radius:11px;padding:15px;font-size:16px;font-weight:600;cursor:pointer;
     transition:transform .15s,filter .15s}
-  button.go:active{transform:scale(.985)} button.go:disabled{opacity:.5}
+  button.go:active{transform:scale(.985)} button.go:disabled{opacity:.5;cursor:default}
   #status{margin:14px 2px 0;min-height:22px;font-size:14.5px}
-  #status.ok{color:var(--ok)} #status.err{color:var(--err)} #status.busy{color:var(--sub)}
-  #settings{margin-top:14px;display:none}
-  #settings.show{display:block}
-  #settings .row{margin-bottom:12px}
-  .hint{color:var(--sub);font-size:12.5px;margin:2px 2px 0}
+  .ok{color:var(--ok)} .err{color:var(--err)} .busy{color:var(--sub)}
   footer{color:var(--sub);font-size:12px;text-align:center;margin:22px 0 6px}
+
+  /* mode switch */
+  .modes{display:flex;gap:6px;background:var(--chip);border-radius:12px;padding:4px;margin:0 0 14px}
+  .mode{flex:1;border:0;background:none;color:var(--sub);font:inherit;font-size:14.5px;font-weight:600;
+    padding:9px;border-radius:9px;cursor:pointer}
+  .mode[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(60,40,20,.08)}
+
+  /* search */
+  .searchrow{display:flex;gap:8px}
+  .searchrow input{flex:1}
+  .searchrow button{margin:0;width:auto;padding:0 18px;flex:0 0 auto}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin:13px 0 0}
+  .chip{border:1px solid var(--line);background:var(--bg);color:var(--sub);border-radius:999px;
+    padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .chip[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+  .chip .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:1px}
+  .hint{color:var(--sub);font-size:12.5px;margin:2px 2px 0}
+
+  .srcstatus{margin:12px 2px 0;font-size:12.5px;color:var(--sub)}
+  .srcstatus .bad{color:var(--err)}
+  .banner{margin:12px 0 0;padding:10px 12px;border:1px dashed var(--line);border-radius:10px;
+    font-size:13.5px;color:var(--sub)}
+  .banner button{background:none;border:0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;padding:0}
+
+  /* results */
+  .rows{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+  .row{display:grid;grid-template-columns:auto 56px 1fr auto;gap:11px;align-items:center;
+    border:1px solid var(--line);border-radius:12px;padding:9px 11px;background:var(--bg)}
+  .row.disabled{opacity:.5}
+  .row input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);margin:0}
+  .thumb{width:56px;height:42px;object-fit:cover;border-radius:6px;background:var(--chip);display:block}
+  .meta{min-width:0}
+  .ttl{font-size:14.5px;font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  /* the title is wrapped in <label> for a big tap target — undo the form-label styling */
+  .ttl label{text-transform:none;font-size:inherit;color:inherit;font-weight:inherit;
+    letter-spacing:normal;margin:0;display:inline;cursor:pointer}
+  .row.disabled .ttl{text-decoration:line-through}
+  /* wrap rather than truncate — duration/upload-date sit last and must not be cut off */
+  .sub{font-size:12.5px;color:var(--sub);margin-top:2px;overflow:hidden;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .tags{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+  .pill{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    padding:2px 7px;border-radius:999px;color:#fff;white-space:nowrap}
+  .pill.youtube{background:var(--yt)} .pill.soundcloud{background:var(--sc)} .pill.bandcamp{background:var(--bc)}
+  .badge{font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:2px 7px;border-radius:6px;
+    border:1px solid currentColor;white-space:nowrap;background:none;font-family:inherit;cursor:default}
+  .badge.LOSSLESS{color:var(--q-lossless)} .badge.HIGH{color:var(--q-high)}
+  .badge.GOOD{color:var(--q-good)} .badge.OK{color:var(--q-ok)} .badge.LOW{color:var(--q-low)}
+  .badge.UNPROBED{color:var(--sub);cursor:pointer} .badge.UNAVAILABLE{color:var(--sub)}
+  .why{grid-column:1/-1;font-size:12px;color:var(--sub);border-top:1px solid var(--line);
+    margin-top:2px;padding-top:7px;word-break:break-word}
+  .why a{color:var(--accent)}
+  .skel{height:62px;border-radius:12px;background:linear-gradient(90deg,var(--chip),var(--bg),var(--chip));
+    background-size:200% 100%;animation:sh 1.2s linear infinite}
+  @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .empty{text-align:center;color:var(--sub);font-size:14px;padding:22px 6px}
+  .empty button{background:none;border:0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer}
+
+  /* selection bar */
+  .selbar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);
+    padding:11px max(14px,env(safe-area-inset-left)) max(11px,env(safe-area-inset-bottom));
+    display:flex;gap:10px;align-items:center;box-shadow:0 -6px 20px rgba(60,40,20,.08);z-index:20}
+  .selbar .n{flex:1;font-size:14px;font-weight:600}
+  .selbar button{margin:0;width:auto;padding:11px 16px;border-radius:10px;font-size:14.5px}
+  .selbar .ghost{background:none;color:var(--sub);border:1px solid var(--line);font-weight:600;
+    font-family:inherit;cursor:pointer}
 </style>
 </head>
 <body>
@@ -53,30 +121,66 @@
     <button class="gear" id="gear" title="Settings" aria-label="Settings">⚙</button>
   </header>
 
-  <div class="card">
-    <label for="url">Link to grab</label>
-    <textarea id="url" inputmode="url" autocapitalize="off" autocorrect="off"
-      placeholder="Paste a YouTube / SoundCloud / Vimeo… link"></textarea>
-    <button class="go" id="go">Send to Downie ↧</button>
-    <div id="status"></div>
-
-    <div id="settings">
-      <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
-      <div class="row">
-        <label for="api">Webhook URL</label>
-        <input id="api" inputmode="url" placeholder="https://downie.sunhouse.media">
-      </div>
-      <div class="row">
-        <label for="token">Token</label>
-        <input id="token" type="password" placeholder="paste the token from the Mac">
-        <div class="hint">Stored only on this device (localStorage). Never in the GitHub repo.</div>
-      </div>
-      <button class="go" id="save" style="background:var(--ink)">Save settings</button>
-    </div>
+  <div class="modes" role="tablist">
+    <button class="mode" id="tabSearch" role="tab" aria-selected="true">Search</button>
+    <button class="mode" id="tabPaste"  role="tab" aria-selected="false">Paste link</button>
   </div>
 
-  <footer>Runs Downie 4 on sunhouse-mini · paste &amp; forget</footer>
+  <!-- ─── SEARCH ─── -->
+  <section class="card" id="viewSearch">
+    <label for="q">Find music</label>
+    <form class="searchrow" id="searchForm">
+      <input id="q" type="search" inputmode="search" autocapitalize="off" autocorrect="off"
+        placeholder="artist, album or song" enterkeyhint="search">
+      <button class="go" id="searchBtn" type="submit">Search</button>
+    </form>
+
+    <div class="chips" id="chips">
+      <button class="chip" data-src="youtube"    aria-pressed="true"><span class="dot" style="background:var(--yt)"></span>YouTube</button>
+      <button class="chip" data-src="soundcloud" aria-pressed="true"><span class="dot" style="background:var(--sc)"></span>SoundCloud</button>
+      <button class="chip" data-src="bandcamp"   aria-pressed="true"><span class="dot" style="background:var(--bc)"></span>Bandcamp</button>
+      <button class="chip" id="strictChip" aria-pressed="true" title="Hides music videos, reactions, karaoke and covers">Audio-first</button>
+    </div>
+    <div class="hint" id="strictHint">Audio-first hides music videos &amp; reactions — official audio, lyric and visualiser uploads only.</div>
+
+    <div class="srcstatus" id="srcStatus"></div>
+    <div class="banner" id="banner" hidden></div>
+    <div class="rows" id="results"></div>
+  </section>
+
+  <!-- ─── PASTE (original flow) ─── -->
+  <section class="card" id="viewPaste" hidden>
+    <label for="url">Link to grab</label>
+    <textarea id="url" inputmode="url" autocapitalize="off" autocorrect="off"
+      placeholder="Paste a YouTube / SoundCloud / Bandcamp… link"></textarea>
+    <button class="go" id="go">Send to the mini ↧</button>
+    <div id="status"></div>
+  </section>
+
+  <!-- ─── SETTINGS ─── -->
+  <section class="card" id="settings" hidden style="margin-top:14px">
+    <div style="margin-bottom:12px">
+      <label for="api">Webhook URL</label>
+      <input id="api" inputmode="url" placeholder="https://downie.sunhouse.media">
+      <div class="hint">Must start with <strong>https://</strong> — an http:// URL is blocked as mixed content.</div>
+    </div>
+    <div>
+      <label for="token">Token</label>
+      <input id="token" type="password" placeholder="paste the token from the Mac">
+      <div class="hint">Stored only on this device (localStorage). Never in the GitHub repo.</div>
+    </div>
+    <button class="go" id="save" style="background:var(--ink)">Save settings</button>
+  </section>
+
+  <footer>Runs yt-dlp on sunhouse-mini · paste &amp; forget</footer>
 </div>
+
+<div class="selbar" id="selbar" hidden>
+  <span class="n" id="selInfo">0 selected</span>
+  <button class="ghost" id="clearSel">Clear</button>
+  <button class="go" id="dlBtn" style="margin-top:0">Download</button>
+</div>
+
 <script src="app.js"></script>
 </body>
 </html>
